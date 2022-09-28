@@ -3,7 +3,7 @@ Mi sono rotto di dover riloggare il wifi del collegio ogni 4 ore. Questo program
 
 # Per usare l'applicazione:
     - Installare: pygame, selenium, pythonping
-        ---> Comando pip: pip install pygame selenium pythonping
+        ---> Comando pip: pip install selenium pythonping
 
 # Da implementare:
     - Modo per riconoscere se email/psswd inseriti sono validi
