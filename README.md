@@ -1,5 +1,5 @@
 # Autoconnettore
-Mi sono rotto di dover riconnettermi ad internet del collegio. Questo programma lo farà in automatico. Semplice, comodo e senza impatto.
+Mi sono rotto di dover riloggare il wifi del collegio ogni 4 ore. Questo programma lo farà in automatico. Semplice, comodo e senza impatto sulle prestazioni.
 
 # Per usare l'applicazione:
     - Installare: pygame, selenium, pythonping
