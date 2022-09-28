@@ -34,7 +34,7 @@ class Application(tk.Tk):
         # On reconnct callback
         def onPacketSent(event):
             self.labelBcounter += 1
-            self.widgets["labelB"].configure(text="Reconnections: {}".format(self.labelBcounter))
+            self.widgets["labelB"].configure(text="Sent Packets: {}".format(self.labelBcounter))
 
         # Events
         self.bind("<<reconnection>>", onReconnect)
