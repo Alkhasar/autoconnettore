@@ -6,9 +6,6 @@
 from distutils.cmd import Command
 import sys
 
-# Importing pygame
-import pygame
-
 # Imports connection module
 from modules import Connection
 from modules import Application
