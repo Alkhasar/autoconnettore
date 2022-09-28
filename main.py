@@ -45,32 +45,23 @@ def main(loginUrl, pingHost, username, password):
     screen = pygame.display.set_mode((250, 250))
     pygame.display.set_caption("Autoconnect")
 
-    # Pause auto connector
-    def pauseAutoConnector():
-        connection.paused = not connection.paused
-
-    def closeProgram():
-        pygame.quit()
-        sys.exit()
-
-    objects.append(Button(screen, 75, 75, 100, 50, "START", "STOP", pauseAutoConnector))
-    objects.append(Button(screen, 75, 145, 100, 50, "EXIT", "", closeProgram))
-
-    # Creating counters
+    # Creating Text objects
     connectionCounter = CounterText(screen, "Riconnesioni Totali: ", screen.get_width()/2, 20)
-    objects.append(connectionCounter)
-
-    # Creating packet text
     packetText = Text(screen, "Pacchetti inviati: 0", screen.get_width()/2, 40)
+    
+    # Creates a new connection on a separate thread
+    connection = Connection(loginUrl, pingHost, username, password, 5, connectionCounter.increment)
+    
+    # Appending objects for cycle update
+    objects.append(Button(screen, 75, 75, 100, 50, "START", "STOP", connection.pause))
+    objects.append(Button(screen, 75, 145, 100, 50, "EXIT", "", sys.exit))
+    objects.append(connectionCounter)
     objects.append(packetText)
 
     ###############
     # Application #
     ###############
 
-    # Creates a new connection on a separate thread
-    connection = Connection(loginUrl, pingHost, username, password, 5, connectionCounter.increment)
-    
     # Application Loop
     while True:
         screen.fill((0, 255, 153))

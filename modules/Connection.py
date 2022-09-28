@@ -55,7 +55,10 @@ class Connection(Thread, Chrome):
         self.setDaemon(True)
         
         # Starting thread
-        self.start()  
+        self.start()
+
+    def pause(self):
+        self.paused = not self.paused
 
     def checkConnection(self, pingHost):
         """Checks if pc is online by sending a single packet to pinghost
