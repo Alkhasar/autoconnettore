@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By
 from pythonping import ping
 
 class Connection(Thread, Chrome):
-    def __init__(self, loginUrl, pingHost, username, password, deltaT=5, onReconnect=None):
+    def __init__(self, loginUrl, pingHost, username, password, onReconnect, onPacketSent, deltaT=5):
         """Initializes a connection to the provider and keeps the connection active
 
         Args:
@@ -42,7 +42,7 @@ class Connection(Thread, Chrome):
 
         # Reconections
         self.onReconnect = onReconnect
-        self.sentPackets = 0
+        self.onPacketSent = onPacketSent
 
         # Connection data
         self.pingHost = pingHost
@@ -72,7 +72,7 @@ class Connection(Thread, Chrome):
         """
         # Pinging google is fun!!
         _ = ping(pingHost, match=True, count=1)
-        self.sentPackets += 1
+        self.onPacketSent()
         return not _.success()
 
     def login(self, url, username, password):

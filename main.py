@@ -3,6 +3,7 @@
 """ Program used to automatically reconnect to wifi. Clean, easy and no useless stuff. (Makes no coffee ;( )"""
 
 # Importing sys
+from distutils.cmd import Command
 import sys
 
 # Importing pygame
@@ -10,15 +11,13 @@ import pygame
 
 # Imports connection module
 from modules import Connection
-from modules import Button
-from modules import CounterText
-from modules import Text
+from modules import Application
 
 # Header
 __author__ = "Alkhasar"
 __copyright__ = "Copyright di mago merlino, non può essere infranto"
 __credits__ = ["Alkhasar", "IlMistico"]
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __status__ = "Prototype"
 
 def main(loginUrl, pingHost, username, password):
@@ -31,56 +30,33 @@ def main(loginUrl, pingHost, username, password):
         password (string): password used to login
     """
 
-    ############
-    # Graphics #
-    ############
-
-    # Initializes pygame
-    pygame.init()
-
-    # Objects List
-    objects = []
-
-    # Initilizing screen
-    screen = pygame.display.set_mode((250, 250))
-    pygame.display.set_caption("Autoconnect")
-
-    # Creating Text objects
-    connectionCounter = CounterText(screen, "Riconnesioni Totali: ", screen.get_width()/2, 20)
-    packetText = Text(screen, "Pacchetti inviati: 0", screen.get_width()/2, 40)
+    # Application Instance
+    app = Application()
     
+    # Defining onReconnection and onPacketSent
+    onReconnection = lambda: app.event_generate("<<reconnection>>")
+    onPacketSent =  lambda: app.event_generate("<<packetSent>>")
+
     # Creates a new connection on a separate thread
-    connection = Connection(loginUrl, pingHost, username, password, 5, connectionCounter.increment)
-    
-    # Appending objects for cycle update
-    objects.append(Button(screen, 75, 75, 100, 50, "START", "STOP", connection.pause))
-    objects.append(Button(screen, 75, 145, 100, 50, "EXIT", "", sys.exit))
-    objects.append(connectionCounter)
-    objects.append(packetText)
+    connection = Connection(loginUrl, pingHost, username, password, onReconnection, onPacketSent)
 
-    ###############
-    # Application #
-    ###############
+    def onButtonAPress():
+        # Change Text
+        app.widgets["buttonA"].configure(text = "START" if app.widgets["buttonA"]["text"] == "STOP" else "STOP")
 
-    # Application Loop
-    while True:
-        screen.fill((0, 255, 153))
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        # Pause or unpause 
+        connection.pause()
 
-        # Placebo text (to make user happy seeing something moving :[ )
-        packetText.changeText("Pacchetti inviati: {}".format(connection.sentPackets))
-
-        # Updating every graphic element
-        for o in objects:
-            o.update()
-
-        pygame.display.flip()
-        pygame.time.Clock().tick(10)
+    # Adding button functions
+    app.widgets["buttonA"].configure(command=onButtonAPress)
+    app.widgets["buttonB"].configure(command=sys.exit)
 
 
+
+    app.mainloop()
+    sys.exit()
+
+ 
 if __name__ == "__main__":
     
     # Dormitory web url

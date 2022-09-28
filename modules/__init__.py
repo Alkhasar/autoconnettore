@@ -1,4 +1,2 @@
-from .Button import Button
+from .Application import Application
 from .Connection import Connection
-from .CounterText import CounterText
-from .Text import Text
