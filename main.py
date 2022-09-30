@@ -5,6 +5,7 @@
 # Importing sys
 from distutils.cmd import Command
 import sys
+from os import path
 
 # Imports connection module
 from modules import Connection
@@ -48,8 +49,7 @@ def main(loginUrl, pingHost, username, password):
     app.widgets["buttonA"].configure(command=onButtonAPress)
     app.widgets["buttonB"].configure(command=sys.exit)
 
-
-
+    # Quitting
     app.mainloop()
     sys.exit()
 
@@ -57,13 +57,15 @@ def main(loginUrl, pingHost, username, password):
 if __name__ == "__main__":
     
     # Dormitory web url
-    loginUrl = "http://192.168.55.250/redirect.cgi?arip=www.gstatic.com&original_url=http%3A%2F%2Fwww.gstatic.com%2Fgenerate%5F204"
-    pingHost = "8.8.8.8" # This is a google host
+    #loginUrl = "http://192.168.55.250/redirect.cgi?arip=www.gstatic.com&original_url=http%3A%2F%2Fwww.gstatic.com%2Fgenerate%5F204"
+    #pingHost = "8.8.8.8" # This is a google host
 
     # Reading login data from file
     loginData = None
     with open("loginData.txt", "r") as f:
-        loginData = [d.strip() for d in f.readlines()]
+        loginData = [d.strip()[(d.strip()).find('=') + 1:] for d in f.readlines()]
+
+    #print(path.abspath("loginData.txt"))
 
     # Launching program
-    main(loginUrl, pingHost, loginData[0], loginData[1])
+    main(loginData[0], loginData[1], loginData[2], loginData[3])
