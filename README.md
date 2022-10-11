@@ -6,7 +6,7 @@ Mi sono rotto di dover riloggare il wifi del collegio ogni 4 ore. Questo program
         ---> Comando pip: pip install selenium pythonping
 
 # Da implementare:
-    - Modo per riconoscere se email/psswd inseriti sono validi
-    - Verifica del corretto caricamenteo della pagina
+    - Statistiche di riconnesione
+    - Predizione momento di login
 
 è possibile riscaricare il webdriver da: https://chromedriver.chromium.org/downloads
