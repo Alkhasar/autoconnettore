@@ -1,5 +1,5 @@
 # Importing std libraries
-import time, os
+import time, os, sys
 
 # Importing thread
 from threading import Thread
@@ -12,8 +12,11 @@ from selenium.webdriver.common.by import By
 # Importing ping
 from pythonping import ping
 
+# Project import
+from .DebugConsole import DebugConsole
+
 class Connection(Thread, Chrome):
-    def __init__(self, loginUrl, pingHost, username, password, onReconnect, onPacketSent, deltaT=5):
+    def __init__(self, loginUrl, pingHost, username, password, onReconnect, onPacketSent, onWebsiteError, deltaT=5):
         """Initializes a connection to the provider and keeps the connection active
 
         Args:
@@ -36,6 +39,7 @@ class Connection(Thread, Chrome):
         options.add_argument("--disable-blink-features=AutomationControlled")
         
         super(Thread, self).__init__(executable_path=("webdriver/chromedriver.exe" if os.name == "nt"  else "webdriver/chromedriver"), options=options)
+        self.debugConsole = DebugConsole()
 
         # This thread is obviosly not stopped
         self.paused = True
@@ -43,6 +47,7 @@ class Connection(Thread, Chrome):
         # Reconections
         self.onReconnect = onReconnect
         self.onPacketSent = onPacketSent
+        self.onWebsiteError = onWebsiteError
 
         # Connection data
         self.pingHost = pingHost
@@ -50,6 +55,9 @@ class Connection(Thread, Chrome):
         self.username = username
         self.password = password
         self.deltaT = deltaT
+
+        # Connection variables
+        self.connected = False
 
         # Thread starting itself as daemon 
         self.setDaemon(True)
@@ -59,6 +67,7 @@ class Connection(Thread, Chrome):
 
     def pause(self):
         self.paused = not self.paused
+        return self.paused
 
     def checkConnection(self, pingHost):
         """Checks if pc is online by sending a single packet to pinghost
@@ -70,10 +79,14 @@ class Connection(Thread, Chrome):
         Returns:
             bool: returns True if connection needs to be reenstablished
         """
+        
+        self.debugConsole.log("Packet sent to {}".format(pingHost))
         # Pinging google is fun!!
-        _ = ping(pingHost, match=True, count=1)
+        self.connected = ping(pingHost, match=True, count=1)
         self.onPacketSent()
-        return not _.success()
+        self.debugConsole.log("Connection lost" if not self.connected.success() else "Connection is stable")
+
+        return not self.connected.success()
 
     def login(self, url, username, password):
         """Executes login routine (ノಠ益ಠ)ノ彡┻━┻
@@ -83,18 +96,39 @@ class Connection(Thread, Chrome):
             username (string): username used to login
             password (string): password used to login
         """
+        self.debugConsole.log("Executing login")
+
         # Navigating to login page
         self.get(url)
 
         # Selecting elements
-        _username = self.find_element(By.NAME, "username")
-        _password = self.find_element(By.NAME, "password")
-        submitBtn = self.find_element(By.ID, "submit-btn")
+        try:
+            _username = self.find_element(By.NAME, "username")
+            _password = self.find_element(By.NAME, "password")
+            submitBtn = self.find_element(By.ID, "submit-btn")
+        except:
+            self.debugConsole.log("WARNING, WebSite Probably changed! Please try a manual login!")
+            self.onWebsiteError()
 
         # Login
         _username.send_keys(username)
         _password.send_keys(password)
-        submitBtn.click()        
+        submitBtn.click()
+
+        # Checking login
+        element = self.find_element(By.CLASS_NAME, "text-line")
+
+        # Waiting 1 second
+        time.sleep(1)
+
+        # Checking if reconnection happened        
+        if element.text == "Login effettuato con successo!\n\nBuona navigazione!":
+            self.debugConsole.log("Successfully reconnected")
+        else:
+            if(self.checkConnection):
+                self.debugConsole("Reconnection Failed")
+            else:
+                self.debugConsole("Reconnection is probably reenstablished, please check manually")
 
     def run(self):
         """Function automatically called by thread, contains auto-login logic
@@ -106,5 +140,6 @@ class Connection(Thread, Chrome):
             # If this thread is not paused check for connection
             if not self.paused:
                 if(self.checkConnection(self.pingHost)):
+                    self.debugConsole.log("Reconnecting")
                     self.login(self.loginUrl, self.username, self.password)
                     self.onReconnect()

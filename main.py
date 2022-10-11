@@ -3,13 +3,12 @@
 """ Program used to automatically reconnect to wifi. Clean, easy and no useless stuff. (Makes no coffee ;( )"""
 
 # Importing sys
-from distutils.cmd import Command
 import sys
-from os import path
 
 # Imports connection module
 from modules import Connection
 from modules import Application
+from modules import DebugConsole
 
 # Header
 __author__ = "Alkhasar"
@@ -30,42 +29,59 @@ def main(loginUrl, pingHost, username, password):
 
     # Application Instance
     app = Application()
+
+    
+    # Debug Console instance
+    console = DebugConsole()
     
     # Defining onReconnection and onPacketSent
     onReconnection = lambda: app.event_generate("<<reconnection>>")
     onPacketSent =  lambda: app.event_generate("<<packetSent>>")
+    onShutDown =  lambda: app.event_generate("<<shutdown>>")
 
     # Creates a new connection on a separate thread
-    connection = Connection(loginUrl, pingHost, username, password, onReconnection, onPacketSent)
+    connection = Connection(loginUrl, pingHost, username, password, onReconnection, onPacketSent, onShutDown)
 
     def onButtonAPress():
         # Change Text
         app.widgets["buttonA"].configure(text = "START" if app.widgets["buttonA"]["text"] == "STOP" else "STOP")
 
         # Pause or unpause 
-        connection.pause()
+        pause = connection.pause()
 
+        # Logging
+        console.log("Program stopped" if pause else "Program started")
+    
+    def onExit():
+        # Loggin program shutdown
+        console.log("Program Shutdown")
+
+        # Saving logfle
+        console.saveLog()
+
+        # Closing application
+        sys.exit()
+    
+    # Binding shutdown event
+    app.bind("<<shutdown>>", onExit)
+        
     # Adding button functions
     app.widgets["buttonA"].configure(command=onButtonAPress)
-    app.widgets["buttonB"].configure(command=sys.exit)
+    app.widgets["buttonB"].configure(command=onExit)
 
     # Quitting
     app.mainloop()
-    sys.exit()
+    
+    # Application closed without closing logfile
+    print("WARNING: Application closed without last logLine! Please use QUIT button!")
 
  
 if __name__ == "__main__":
-    
-    # Dormitory web url
-    #loginUrl = "http://192.168.55.250/redirect.cgi?arip=www.gstatic.com&original_url=http%3A%2F%2Fwww.gstatic.com%2Fgenerate%5F204"
-    #pingHost = "8.8.8.8" # This is a google host
 
     # Reading login data from file
     loginData = None
     with open("loginData.txt", "r") as f:
         loginData = [d.strip()[(d.strip()).find('=') + 1:] for d in f.readlines()]
-
-    #print(path.abspath("loginData.txt"))
 
     # Launching program
     main(loginData[0], loginData[1], loginData[2], loginData[3])
