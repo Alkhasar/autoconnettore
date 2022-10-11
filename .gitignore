@@ -130,3 +130,6 @@ dmypy.json
 
 # Ingoring vscode fodlers
 .vscode/
+
+*.txt
+loginData.txt
