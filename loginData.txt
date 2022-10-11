@@ -1,2 +1,4 @@
-emailFittizia@latuaemail.com
-passwordFittizziaSeNonLaCambiSeiUnPirla(┛ಠ_ಠ)┛彡┻━┻
+loginUrl=
+pingHost=8.8.8.8
+email=
+psswd=
